@@ -43,16 +43,87 @@ names(file_vector) <- "Bio_File"
 
 head(file_vector)
 
+small_list <- file_vector[1:10, ]
+
+growing_table <- 
+  tribble(
+    ~"usCongressBioId", ~"familyName", ~"givenName", ~"birthDate", ~"profileText", ~"relationship",
+    0, 0, 0, 0, 0, 0
+)
+
+for (thing in small_list) {
+  bio_link <- paste0("BioguideProfiles/", thing)
+  read_in <- read_json(bio_link)
+  
+  #adding_on <- 
+   # tibble(json = list(read_in)) |>
+   # unnest_wider(json) |>
+   # select(usCongressBioId, 
+   #        familyName, 
+   #        givenName,
+   #        birthDate,
+   #        profileText,
+   #        relationship)
+  #growing_table <- rbind(growing_table, adding_on)
+  
+  print("Completed:",line)
+  
+}
+
+
 # using {jsonlite} 
 # "https://r4ds.hadley.nz/rectangling.html#json"
 
 # Trying with one first
 file_try <- 
   read_json("BioguideProfiles/A000001.json")
+second_load <- 
+  read_json("BioguideProfiles/A000002.json")
+
+third_load <-
+  read_json("BioguideProfiles/A000003.json")
 
 # "Rectangling"
 file_try2 <-
   tibble(json = list(file_try))
+
+first_try <- 
+  tibble(json = list(file_try)) |>
+  unnest_wider(json) |>
+  select(usCongressBioId, 
+         familyName, 
+         givenName,
+         birthDate,
+         profileText,
+         relationship)
+
+second_try <-
+  tibble(json = list(second_load)) |>
+  unnest_wider(json) |>
+  select(usCongressBioId, 
+         familyName, 
+         givenName,
+         birthDate,
+         profileText,
+         relationship) 
+
+third_try <-
+  tibble(json = list(third_load)) |>
+  unnest_wider(json) |>
+  select(usCongressBioId, 
+         familyName, 
+         givenName,
+         birthDate,
+         profileText,
+         relationship)
+
+names(first_try)
+names(second_try)
+names(third_try)
+
+bind_test <- 
+  rbind(first_try, second_try, third_try)
+
 
 # having issues - currently cannot combine the logical "birthcirca" with the characters in the other fields
 file_try2 |>
@@ -103,7 +174,7 @@ first_nest <-
 tibble(file_try)[-c(10,12),] |>
   unnest_longer(file_try)
 
-# And again 
+# And again  ----
 new_try <- 
   tibble(json = list(file_try)) |>
   unnest_wider(json)
@@ -213,3 +284,5 @@ new_try14 <-
     names_sep = "_")
 
 glimpse(new_try14)
+
+# MORE REALIZATIONS THAT THE COLUMNS WILL BE UNEVEN FOR EACH PROFILE!! ----
