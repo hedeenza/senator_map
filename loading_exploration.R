@@ -43,32 +43,36 @@ names(file_vector) <- "Bio_File"
 
 head(file_vector)
 
-small_list <- file_vector[1:10, ]
+small_list <- as.data.frame(file_vector[1:10, ])
 
 growing_table <- 
   tribble(
-    ~"usCongressBioId", ~"familyName", ~"givenName", ~"birthDate", ~"profileText", ~"relationship",
-    0, 0, 0, 0, 0, 0
+    ~"usCongressBioId", ~"familyName", ~"givenName", ~"profileText",
+    0, 0, 0, 0
 )
 
-for (thing in small_list) {
-  bio_link <- paste0("BioguideProfiles/", thing)
+
+read_json("BioguideProfiles/A000001.json")
+
+test_tibble <- tibble("0")
+
+# The working 'for' loop - no birth date for some... going to need to extract from the "Profile text" column
+for (Bio_File in file_vector$Bio_File) {
+  bio_link <- paste0('BioguideProfiles/', Bio_File)
   read_in <- read_json(bio_link)
+  adding_on <- 
+    tibble(json = list(read_in)) |>
+    unnest_wider(json) |>
+    select(usCongressBioId, 
+           familyName, 
+           givenName,
+           profileText)
+  growing_table <- rbind(growing_table, adding_on)
   
-  #adding_on <- 
-   # tibble(json = list(read_in)) |>
-   # unnest_wider(json) |>
-   # select(usCongressBioId, 
-   #        familyName, 
-   #        givenName,
-   #        birthDate,
-   #        profileText,
-   #        relationship)
-  #growing_table <- rbind(growing_table, adding_on)
-  
-  print("Completed:",line)
-  
+  print(paste0("Completed:",Bio_File))
 }
+
+#write_csv(growing_table, "combined_bios.csv")
 
 
 # using {jsonlite} 
