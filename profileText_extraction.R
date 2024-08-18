@@ -39,7 +39,11 @@ year_split <-
   ) # separating off the year
 
 # 
-year_split
+names(year_split) <- c("Working", "Year")
+
+ # Do something about the double space - everything before is a birth name. 
+year_split$Working |>   
+str_replace_all(" \\bApril", "*\\1")        # need a way of separating the months from what's on the left if they're there
   
   
 
