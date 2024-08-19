@@ -14,13 +14,13 @@ sections <-
     too_many = "drop")
 
 # Creating a proof of concept tester
-tester <- sections |> head(n=20)
+tester <- sections |> head(n=50)
 
 # Detecting the position 
-tester$profileText_1 |> str_detect("Representative|Senator")
+tester$profileText_1 |> str_detect("Representative|Senator|Delegate")
 
 # Extracting just the position name
-tester$profileText_1 |> str_extract("Representative|Senator")
+tester$profileText_1 |> str_extract("Representative|Senator|Delegate")
 
 
 # Experimenting with what to separate, and in what order 
@@ -42,18 +42,37 @@ year_split <-
 names(year_split) <- c("Working", "Year")
 
  # Do something about the double space - everything before is a birth name. 
-year_split$Working |>   
-str_replace_all(" \\bApril", "*\\1")        # need a way of separating the months from what's on the left if they're there
-  
-  
+day_split <- 
+  year_split$Working |>   
 
-str_replace_all("January|February|March|April|May|June|July|August|September|October|November|December", "-") |>
-  str_replace_all("\\, -", "*") |>
-  str_trim() |>
-  as.data.frame() |> 
+  str_replace_all("January", "*January") |>        # need a way of separating the months from what's on the left if they're there
+  str_replace_all("February", "*February") |> 
+  str_replace_all("March", "*March") |> 
+  str_replace_all("April", "*April") |> 
+  
+  str_replace_all("May", "*May") |> 
+  str_replace_all("June", "*June") |> 
+  str_replace_all("July", "*July") |> 
+  str_replace_all("August", "*August") |>
+  
+  str_replace_all("September", "*September") |> 
+  str_replace_all("October", "*October") |> 
+  str_replace_all("November", "*November") |> 
+  str_replace_all("December", "*December") |>
+  
+  as.data.frame() |>
+  
   separate_wider_delim(
     cols = 1,
-    names_sep = "_",
+    names_sep = "-",
     delim = "*",
-    too_few = "align_start",
-    too_many = "drop")
+    too_few = "align_start"
+  )
+
+# 
+day_split
+
+names(day_split) <- c("Working", "Day")
+
+day_split$Working |>
+  str_remove_all("\\bon\\b")
