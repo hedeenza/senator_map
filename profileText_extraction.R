@@ -163,7 +163,7 @@ last_first <-
   
 role <- 
   sections$profileText_1 |>
-  str_extract("Representative|Senator|Delegate|Representative and a Senator") |>
+  str_extract("Representative|Senator|Delegate") |>
   as.data.frame()
 
   # quick test
@@ -188,8 +188,77 @@ role <-
   sections$profileText_1 |>
     str_view("Delegate and a Representative")
   
+  sections$profileText_1 |> str_view("Representative")
   
   
+  # Detect for the desired combination of the positions, add a column with a logical value indicating that combination of positions
+  sections |> mutate(R_S = str_detect(sections$profileText_1, "Representative and a Senator")) |> select(R_S)
+  sections |> mutate(D_R = str_detect(sections$profileText_1, "Delegate and a Representative")) |> select(D_R)
+  sections |> mutate(D_S = str_detect(sections$profileText_1, "Delegate and a Senator")) |> select(D_S)
+  
+  sections$profileText_1 |> str_view("vice president") # row 2,845
+  sections$profileText_1 |> str_view("Representative|(.ice) (.resident)") # that way both lower case and capital P are detected
+  
+  sections |> mutate(S_VP = str_detect(sections$profileText_1, "(.ice) (.resident)")) |> filter(S_VP == TRUE) |> select(familyName, profileText_1, S_VP)
+  
+  
+  sections |> mutate(P = str_detect(sections$profileText_1, "(\\d.+) (.resident)")) |> filter(P == T) |> select(givenName, familyName, profileText_1, P)
+  
+
+  # Plan is to add columns to the sections table that indicate whether they were each position separately,
+  # allowing multiple positions to be true
+  # later filtering will be along those columns
+  
+method_test <- 
+    sections |> 
+    mutate(
+      Rep = str_detect(sections$profileText_1, "Representative"),
+      Sen = str_detect(sections$profileText_1, "Senator"),
+      Del = str_detect(sections$profileText_1, "Delegate"),
+      VP = str_detect(sections$profileText_1, "(.ice) (.resident)"),
+      P = str_detect(sections$profileText_1, "(\\d.+) (.resident)"),
+      P1 = str_detect(sections$profileText_1, "eighth")) |>
+    select(
+      usCongressBioId,
+      givenName,
+      familyName,
+      profileText_1,
+      Rep,
+      Sen,
+      Del,
+      VP,
+      P,
+      P1)
+  
+  method_test |> 
+    filter(
+      #Rep == F & 
+      #Sen == F & 
+      #Del == T  &
+      #VP == F & 
+      P1 == T) |> 
+    arrange(familyName) |> 
+    print(n=49)
+  
+  # President: first, third, eighth..... (continue during next session) there are likely more
+  
+  eight_check <- bios |> filter(usCongressBioId == "F000260" | usCongressBioId == "L000381")
+  
+  delegates <- method_test |> filter(Del == T) |> arrange(familyName) |>print(n=40)
+  
+  # It appears those who were neither Representatives, Senators, Delegates, or Vice Presidents before becoming
+  # President of the United States are not listed in the bios
+  wh <- bios |> filter(givenName == "William" & familyName == "Harrison")
+  bush <- bios |> filter(familyName == "Bush")
+  biden <- bios |> filter(familyName == "Biden") |> arrange(familyName) |> print()
+    biden$profileText
+
+  clinton <- bios |> filter(familyName == "Clinton") |> print(n=30)
+  
+  bios |> filter(familyName == "Washington")
+  
+    
+    
 birth_year <-
   sections$profileText_2 |> 
   str_remove_all("\\bborn\\b|\\bin\\b|\\bnear\\b") |> # includes the boundaries around the words, so "in" doesn't get removed from the middle of a word
