@@ -236,7 +236,7 @@ method_test <-
       #Sen == F & 
       #Del == T  &
       #VP == F & 
-      P1 == T) |> 
+      P == T) |> 
     arrange(familyName) |> 
     print(n=49)
   
@@ -257,7 +257,82 @@ method_test <-
   
   bios |> filter(familyName == "Washington")
   
-    
+sections$profileText_1 |>
+  str_view("six") # fir > 1; .eco > 2; third > 3rd; six > 6; eight > 8; .hirty- > 3; .inety- > 9
+
+
+# Fixing the inconsistent naming conventions before piping this into the method-test
+# Washington did not show up before
+numerical_fix <-
+  sections$profileText_1 |>
+    str_replace_all("firs", "1") |>
+  str_replace_all(".econ", "2") |>
+  str_replace_all("third", "3d") |>
+  str_replace_all("sixt", "6") |>
+  str_replace_all("eight", "8") |>
+  str_replace_all(".hirty-", "3") |>
+  str_replace_all(".inety-", "9") |>
+  as.data.frame()
+
+names(numerical_fix) <- "profileText_1"  
+
+# Grabbing just the first few columns of the table
+id_info <- 
+  sections |>
+  select(
+    usCongressBioId,
+    familyName,
+    givenName)
+# Binding the numerically fixed columns
+id_numerical_fix <- 
+  cbind(
+    id_info,
+    numerical_fix)
+
+
+id_numerical_fix$profileText_1 |> str_view("1t")
+
+id_numerical_fix |> filter(familyName == "Washington")
+
+method_test_2 <- 
+  id_numerical_fix |> 
+  mutate(
+    Rep = str_detect(id_numerical_fix$profileText_1, "Representative"),
+    Sen = str_detect(id_numerical_fix$profileText_1, "Senator"),
+    Del = str_detect(id_numerical_fix$profileText_1, "Delegate"),
+    VP = str_detect(id_numerical_fix$profileText_1, "(.ice) (.resident)"),
+    P = str_detect(id_numerical_fix$profileText_1, "(\\d.*) (.resident)")) |>
+  select(
+    usCongressBioId,
+    givenName,
+    familyName,
+    profileText_1,
+    Rep,
+    Sen,
+    Del,
+    VP,
+    P)
+
+method_test_2 |> 
+  filter(
+    #Rep == F & 
+    #Sen == F & 
+    #Del == T  &
+    #VP == F & 
+    P == T) |>
+  select(
+    givenName,
+    familyName,
+    Rep,
+    Sen,
+    Del,
+    VP,
+    P) |>
+  arrange(familyName) 
+
+  
+  
+
     
 birth_year <-
   sections$profileText_2 |> 
